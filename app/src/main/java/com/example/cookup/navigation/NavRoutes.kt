@@ -1,9 +1,20 @@
 package com.example.cookup.navigation
 
-object NavRoutes {
-    const val WELCOME = "welcome_screen"   // New Welcome screen
-    const val INGREDIENTS = "ingredients_screen"
-    const val RECIPES = "recipes_screen"
-    const val RECIPE_DETAIL = "recipe_detail_screen"
-    const val FAVORITES = "favorites_screen"
+sealed class NavRoutes(val route: String) {
+
+    object LoginScreen : NavRoutes("login_screen")
+    object RegisterScreen : NavRoutes("register_screen")
+
+    object WelcomeScreen : NavRoutes("welcome_screen")
+    object IngredientsScreen : NavRoutes("ingredients_screen")
+    object FavoritesScreen : NavRoutes("favorites_screen")
+    object AboutUsScreen : NavRoutes("about_us_screen")
+
+    object RecipesScreen : NavRoutes("recipes_screen/{ids}") {
+        fun createRoute(ids: String) = "recipes_screen/$ids"
+    }
+
+    object RecipeDetailRoute : NavRoutes("recipe_detail/{recipeId}") {
+        fun createRoute(recipeId: Int) = "recipe_detail/$recipeId"
+    }
 }

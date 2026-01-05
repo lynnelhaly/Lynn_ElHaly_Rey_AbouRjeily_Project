@@ -21,14 +21,12 @@ import com.example.cookup.R
 import com.example.cookup.navigation.NavRoutes
 
 @Composable
-fun WelcomeScreen(
+fun AboutUsScreen(
     navController: NavHostController
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
 
-        // 🍽 FULL BACKGROUND IMAGE (no split, no zoom chaos)
+        // 🍽 Background illustration
         Image(
             painter = painterResource(id = R.drawable.welcome_bg),
             contentDescription = null,
@@ -36,14 +34,14 @@ fun WelcomeScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // 🧊 Soft white overlay for readability
+        // 🧊 Soft overlay
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White.copy(alpha = 0.65f))
         )
 
-        // 🤍 CENTER CARD
+        // 🤍 Center Card
         Card(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -55,38 +53,60 @@ fun WelcomeScreen(
             Column(
                 modifier = Modifier
                     .padding(horizontal = 28.dp, vertical = 36.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                // 🍳 APP NAME
+                // 🍳 Title (same as Welcome)
                 Text(
-                    text = "CookUp",
-                    fontSize = 40.sp,
+                    text = "About CookUp",
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color(0xFF6B4E3D)
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // ✨ CREATIVE QUOTE
                 Text(
-                    text = "Turn what you have\ninto something delicious",
+                    text = "CookUp was created for anyone who has ever opened their fridge, looked inside, and thought:",
+                    fontSize = 15.sp,
                     textAlign = TextAlign.Center,
-                    fontSize = 16.sp,
-                    color = Color(0xFF7A6A5A),
-                    lineHeight = 22.sp
+                    color = Color(0xFF7A6A5A)
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "“What can I even cook with this?”",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                    color = Color(0xFF6B4E3D)
+                )
 
-                // 🔥 PRIMARY BUTTON
+                Text(
+                    text = "Instead of wasting food or time, CookUp helps you turn the ingredients you already have into real, delicious recipe ideas — quickly and easily.",
+                    fontSize = 15.sp,
+                    textAlign = TextAlign.Center,
+                    color = Color(0xFF7A6A5A)
+                )
+
+                Text(
+                    text = "Built as a university project using Kotlin, Jetpack Compose, MVVM architecture, and Firebase, CookUp follows modern Android development practices while focusing on simplicity, usefulness, and a great user experience.",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    color = Color(0xFF7A6A5A),
+                    lineHeight = 20.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // 🔥 Button color = Welcome screen
                 Button(
                     onClick = {
-                        navController.navigate(NavRoutes.LoginScreen.route)
+                        navController.navigate(NavRoutes.WelcomeScreen.route) {
+                            popUpTo(NavRoutes.WelcomeScreen.route)
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
+                        .height(50.dp),
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFE07A3F),
@@ -94,32 +114,7 @@ fun WelcomeScreen(
                     )
                 ) {
                     Text(
-                        text = "Get Started",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // ℹ️ SECONDARY BUTTON
-                OutlinedButton(
-                    onClick = {
-                        navController.navigate(NavRoutes.AboutUsScreen.route)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFF6B4E3D)
-                    ),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        width = 1.dp
-                    )
-                ) {
-                    Text(
-                        text = "About Us",
+                        text = "Back to Home",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium
                     )

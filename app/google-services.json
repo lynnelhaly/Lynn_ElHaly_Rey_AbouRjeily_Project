@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "364518973538",
+    "project_id": "cookup-2a08f",
+    "storage_bucket": "cookup-2a08f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364518973538:android:89be339e20377251a0b13b",
+        "android_client_info": {
+          "package_name": "com.example.cookup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9IS6KxIky0YU9dBcgNxklQvGARe4yHcM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

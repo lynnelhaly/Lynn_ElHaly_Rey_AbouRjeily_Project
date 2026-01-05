@@ -2,13 +2,13 @@ package com.example.cookup.data.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.cookup.data.repository.IngredientRepository
+import com.example.cookup.data.repository.AuthRepository
 
-class IngredientViewModelFactory(
-    private val repo: IngredientRepository
+class AuthViewModelFactory(
+    private val repo: AuthRepository
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return IngredientViewModel(repo) as T
+        return AuthViewModel(repo) as T
     }
 }

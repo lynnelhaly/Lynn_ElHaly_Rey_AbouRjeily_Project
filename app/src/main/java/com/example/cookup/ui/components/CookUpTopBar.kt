@@ -3,7 +3,11 @@ package com.example.cookup.ui.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
@@ -13,29 +17,33 @@ import com.example.cookup.navigation.NavRoutes
 @Composable
 fun CookUpTopBar(
     navController: NavController,
-    currentRoute: String
+    currentRoute: String?
 ) {
-    // Hide the back button on the Welcome screen
-    val showBack = currentRoute != NavRoutes.WELCOME
+    if (currentRoute == NavRoutes.LoginScreen.route) {
+        return
+    }
 
-    // Show the Favorites button only if we're not on the Favorites screen
-    val showFavorites = currentRoute != NavRoutes.FAVORITES
+    val showBackButton =
+        currentRoute != NavRoutes.WelcomeScreen.route &&
+                currentRoute != NavRoutes.LoginScreen.route
+
+    val showFavoritesButton =
+        currentRoute != NavRoutes.FavoritesScreen.route &&
+                currentRoute != NavRoutes.RecipeDetailRoute.route
+
+    val title = when (currentRoute) {
+        NavRoutes.IngredientsScreen.route -> "CookUp – Ingredients"
+        NavRoutes.RecipesScreen.route -> "Matched Recipes"
+        NavRoutes.RecipeDetailRoute.route -> "Recipe Details"
+        NavRoutes.FavoritesScreen.route -> "Favorites"
+        else -> "CookUp"
+    }
 
     TopAppBar(
-        title = {
-            Text(
-                when (currentRoute) {
-                    NavRoutes.INGREDIENTS -> "CookUp – Ingredients"
-                    NavRoutes.RECIPES -> "Matched Recipes"
-                    NavRoutes.RECIPE_DETAIL -> "Recipe Details"
-                    NavRoutes.FAVORITES -> "Favorites"
-                    else -> ""
-                }
-            )
-        },
+        title = { Text(title) },
+
         navigationIcon = {
-            // Show the back arrow if the current screen is not the Welcome screen
-            if (showBack) {
+            if (showBackButton) {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -44,12 +52,16 @@ fun CookUpTopBar(
                 }
             }
         },
+
         actions = {
-            // Show the favorites button if we are not on the Favorites screen
-            if (showFavorites) {
-                IconButton(onClick = {
-                    navController.navigate(NavRoutes.FAVORITES)
-                }) {
+            if (showFavoritesButton) {
+                IconButton(
+                    onClick = {
+                        navController.navigate(NavRoutes.FavoritesScreen.route) {
+                            launchSingleTop = true
+                        }
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
                         contentDescription = "Favorites",

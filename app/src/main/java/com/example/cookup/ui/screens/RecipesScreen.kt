@@ -22,34 +22,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.cookup.CookUpApp
 import com.example.cookup.R
-import com.example.cookup.data.viewmodel.FavoritesViewModel
-import com.example.cookup.data.viewmodel.FavoritesViewModelFactory
+import com.example.cookup.data.remote.model.RecipeDto
 import com.example.cookup.data.viewmodel.RecipeViewModel
 import com.example.cookup.data.viewmodel.RecipeViewModelFactory
 import com.example.cookup.navigation.NavRoutes
+import com.example.cookup.ui.components.BackHeader
+
 
 @Composable
-fun FavoritesScreen(
-    navController: NavController
+fun RecipesScreen(
+    navController: NavHostController,
+    ingredientNames: List<String>
 ) {
     val app = navController.context.applicationContext as CookUpApp
-
-    val favoritesViewModel: FavoritesViewModel = viewModel(
-        factory = FavoritesViewModelFactory(app.favoritesRepository)
-    )
 
     val recipeViewModel: RecipeViewModel = viewModel(
         factory = RecipeViewModelFactory(app.recipeRepository)
     )
 
-    val favoritesState by favoritesViewModel.uiState.collectAsState()
-    val recipeState by recipeViewModel.uiState.collectAsState()
+    val state by recipeViewModel.uiState.collectAsState()
 
-    val favoriteRecipes = recipeState.recipes.filter {
-        favoritesState.favoriteRecipeIds.contains(it.id)
+    val filteredRecipes = state.recipes.filter { recipe ->
+        ingredientNames.any { selected ->
+            val normalizedSelected = normalizeIngredient(selected)
+            recipe.ingredients.any { ingredient ->
+                normalizeIngredient(ingredient).contains(normalizedSelected)
+            }
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -87,27 +89,14 @@ fun FavoritesScreen(
             ) {
 
                 // 🔙 Header
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
+                BackHeader(
+                    title = "Matched Recipes",
+                    onBack = { navController.popBackStack() }
+                )
 
-                    Text(
-                        text = "Your Favorites",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF6B4E3D),
-                        modifier = Modifier.padding(start = 6.dp)
-                    )
-                }
 
                 when {
-                    favoritesState.isLoading || recipeState.isLoading -> {
+                    state.isLoading -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -116,14 +105,20 @@ fun FavoritesScreen(
                         }
                     }
 
-                    favoriteRecipes.isEmpty() -> {
+                    state.errorMessage != null -> {
+                        Text(
+                            text = state.errorMessage ?: "Error loading recipes",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+
+                    filteredRecipes.isEmpty() -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No favorites yet 🍳\nTap the heart on a recipe to save it!",
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                text = "No recipes found with the selected ingredients 🍳",
                                 color = Color(0xFF7A6A5A)
                             )
                         }
@@ -133,9 +128,9 @@ fun FavoritesScreen(
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(favoriteRecipes) { recipe ->
-                                FavoriteCard(
-                                    title = recipe.title,
+                            items(filteredRecipes) { recipe ->
+                                RecipeCard(
+                                    recipe = recipe,
                                     onClick = {
                                         navController.navigate(
                                             NavRoutes.RecipeDetailRoute.createRoute(recipe.id)
@@ -152,8 +147,8 @@ fun FavoritesScreen(
 }
 
 @Composable
-private fun FavoriteCard(
-    title: String,
+private fun RecipeCard(
+    recipe: RecipeDto,
     onClick: () -> Unit
 ) {
     Card(
@@ -165,20 +160,42 @@ private fun FavoriteCard(
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
+
             Text(
-                text = title,
+                text = recipe.title,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF222222)
             )
-            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
-                text = "Tap to open",
+                text = recipe.description,
+                fontSize = 14.sp,
+                color = Color(0xFF7A6A5A)
+            )
+
+            Text(
+                text = "Main ingredients: ${recipe.ingredients.joinToString(", ")}",
                 fontSize = 13.sp,
                 color = Color(0xFF7A6A5A)
             )
         }
     }
+}
+
+private fun normalizeIngredient(value: String): String {
+    return value
+        .lowercase()
+        .replace(
+            Regex("""\d+/?\d*\s*(cup|cups|tbsp|tablespoon|tablespoons|tsp|teaspoon|teaspoons)?"""),
+            ""
+        )
+        .replace(Regex("""\b(tomatoes)\b"""), "tomato")
+        .replace(Regex("""\b(eggs)\b"""), "egg")
+        .replace(Regex("""\b(potatoes)\b"""), "potato")
+        .replace(Regex("""\s+"""), " ")
+        .trim()
 }

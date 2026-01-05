@@ -3,102 +3,93 @@ package com.example.cookup.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.cookup.CookUpApp
-import com.example.cookup.data.viewmodel.*
-import com.example.cookup.ui.components.CookUpTopBar
-import com.example.cookup.ui.screens.*
+import androidx.navigation.navArgument
+import com.example.cookup.data.viewmodel.AuthViewModel
+import com.example.cookup.ui.screens.AboutUsScreen
+import com.example.cookup.ui.screens.IngredientsScreen
+import com.example.cookup.ui.screens.LoginScreen
+import com.example.cookup.ui.screens.RecipesScreen
+import com.example.cookup.ui.screens.RegisterScreen
+import com.example.cookup.ui.screens.WelcomeScreen
+import com.example.cookup.ui.screens.RecipeDetailScreen
+import com.example.cookup.ui.screens.FavoritesScreen
 
 @Composable
-fun AppNavGraph(navController: NavHostController) {
-
-    val app = LocalContext.current.applicationContext as CookUpApp
-    val repo = app.repository
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route ?: NavRoutes.WELCOME
-
-    Scaffold(
-        topBar = {
-            CookUpTopBar(
-                navController = navController,
-                currentRoute = currentRoute.substringBefore("/")
-            )
-        }
-    ) { innerPadding ->
-
+fun AppNavGraph(
+    navController: NavHostController,
+    authViewModel: AuthViewModel
+) {
+    Scaffold { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = NavRoutes.WELCOME // Set Welcome screen as start destination
+            startDestination = NavRoutes.WelcomeScreen.route,
+            modifier = Modifier.padding(innerPadding)
         ) {
 
-            // WELCOME SCREEN
-            composable(NavRoutes.WELCOME) {
-                WelcomeScreen(navController = navController, modifier = Modifier.padding(innerPadding))
+            composable(NavRoutes.WelcomeScreen.route) {
+                WelcomeScreen(navController = navController)
             }
 
-            // INGREDIENT SCREEN
-            composable(NavRoutes.INGREDIENTS) {
-                val vm: IngredientViewModel = viewModel(
-                    factory = IngredientViewModelFactory(repo)
+            composable(NavRoutes.LoginScreen.route) {
+                LoginScreen(navController, authViewModel)
+            }
+
+            composable(NavRoutes.RegisterScreen.route) {
+                RegisterScreen(navController, authViewModel)
+            }
+
+            composable(NavRoutes.IngredientsScreen.route) {
+                IngredientsScreen(navController)
+            }
+
+            composable(
+                route = NavRoutes.RecipesScreen.route,
+                arguments = listOf(
+                    navArgument("ids") { type = NavType.StringType }
                 )
-                IngredientScreen(
+            ) { backStackEntry ->
+                val names = backStackEntry.arguments
+                    ?.getString("ids")
+                    ?.split(",")
+                    ?.map { java.net.URLDecoder.decode(it, "UTF-8") }
+                    ?.filter { it.isNotBlank() }
+                    ?: emptyList()
+
+
+                RecipesScreen(
                     navController = navController,
-                    viewModel = vm,
-                    modifier = Modifier.padding(innerPadding)
+                    ingredientNames = names
                 )
             }
 
-            // RECIPE LIST SCREEN
-            composable("${NavRoutes.RECIPES}/{ids}") { backStackEntry ->
-                val idsRaw = backStackEntry.arguments?.getString("ids") ?: ""
-                val idsList = idsRaw.split(",").filter { it.isNotBlank() }.map { it.toInt() }
-
-                val vm: RecipeListViewModel = viewModel(
-                    factory = RecipeListViewModelFactory(repo, idsList)
-                )
-
-                RecipeListScreen(
-                    navController = navController,
-                    viewModel = vm,
-                    modifier = Modifier.padding(innerPadding)
-                )
+            composable(NavRoutes.AboutUsScreen.route) {
+                AboutUsScreen(navController)
             }
 
-            // RECIPE DETAIL SCREEN
-            composable("${NavRoutes.RECIPE_DETAIL}/{recipeId}") { backStackEntry ->
-                val recipeId = backStackEntry.arguments?.getString("recipeId")?.toInt() ?: 0
-
-                val vm: RecipeDetailViewModel = viewModel(
-                    factory = RecipeDetailViewModelFactory(repo, recipeId)
+            composable(
+                route = NavRoutes.RecipeDetailRoute.route,
+                arguments = listOf(
+                    navArgument("recipeId") { type = NavType.IntType }
                 )
+            ) { backStackEntry ->
+                val recipeId =
+                    backStackEntry.arguments?.getInt("recipeId")
+                        ?: return@composable
 
                 RecipeDetailScreen(
                     navController = navController,
-                    viewModel = vm,
-                    modifier = Modifier.padding(innerPadding)
+                    recipeId = recipeId
                 )
             }
-
-            // FAVORITES SCREEN
-            composable(NavRoutes.FAVORITES) {
-                val vm: FavoritesViewModel = viewModel(
-                    factory = FavoritesViewModelFactory(repo)
-                )
-
-                FavoritesScreen(
-                    navController = navController,
-                    viewModel = vm,
-                    modifier = Modifier.padding(innerPadding)
-                )
+            composable(NavRoutes.FavoritesScreen.route) {
+                FavoritesScreen(navController)
             }
+
         }
     }
 }

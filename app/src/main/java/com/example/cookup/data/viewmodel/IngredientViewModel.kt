@@ -2,45 +2,45 @@ package com.example.cookup.data.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cookup.data.CookUpRepository
-import com.example.cookup.data.model.IngredientEntity
+import com.example.cookup.data.remote.model.IngredientDto
+import com.example.cookup.data.repository.IngredientRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+data class IngredientUiState(
+    val ingredients: List<IngredientDto> = emptyList(),
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null
+)
+
 class IngredientViewModel(
-    private val repo: CookUpRepository
+    private val repository: IngredientRepository
 ) : ViewModel() {
 
-    private val _allIngredients = MutableStateFlow<List<IngredientEntity>>(emptyList())
-    val allIngredients: StateFlow<List<IngredientEntity>> = _allIngredients
+    private val _uiState = MutableStateFlow(IngredientUiState())
+    val uiState: StateFlow<IngredientUiState> = _uiState
 
-    private val _selectedIngredients = MutableStateFlow<List<IngredientEntity>>(emptyList())
-    val selectedIngredients: StateFlow<List<IngredientEntity>> = _selectedIngredients
+    init {
+        fetchIngredients()
+    }
 
-    fun loadIngredients() {
+    private fun fetchIngredients() {
         viewModelScope.launch {
-            _allIngredients.value = repo.getAllIngredients()
+            _uiState.value = IngredientUiState(isLoading = true)
+
+            try {
+                val ingredients = repository.getIngredients()
+                _uiState.value = IngredientUiState(
+                    ingredients = ingredients,
+                    isLoading = false
+                )
+            } catch (e: Exception) {
+                _uiState.value = IngredientUiState(
+                    isLoading = false,
+                    errorMessage = e.message
+                )
+            }
         }
-    }
-
-    fun toggleIngredient(ingredient: IngredientEntity) {
-        val current = _selectedIngredients.value.toMutableList()
-        if (current.contains(ingredient))
-            current.remove(ingredient)
-        else
-            current.add(ingredient)
-
-        _selectedIngredients.value = current
-    }
-
-    fun removeIngredient(ingredient: IngredientEntity) {
-        val current = _selectedIngredients.value.toMutableList()
-        current.remove(ingredient)
-        _selectedIngredients.value = current
-    }
-
-    fun clearSelected() {
-        _selectedIngredients.value = emptyList()
     }
 }
